@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Countdown to the Final Day at UCR</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --navy: #1a2744;
+      --navy-light: #243260;
+      --cream: #f5f0e8;
+      --gold: #c9a84c;
+      --gold-light: #e2c97e;
+      --gold-dim: rgba(201,168,76,0.15);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: var(--navy);
+      background-image:
+        radial-gradient(ellipse at 20% 20%, rgba(201,168,76,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse at 80% 80%, rgba(201,168,76,0.05) 0%, transparent 50%),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+      overflow: hidden;
+      padding: 40px 20px;
+    }
+
+    /* Stars */
+    .stars {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    }
+    .star {
+      position: absolute;
+      background: var(--gold);
+      border-radius: 50%;
+      opacity: 0;
+      animation: twinkle var(--dur) ease-in-out infinite var(--delay);
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: 0; transform: scale(0.5); }
+      50%       { opacity: var(--op); transform: scale(1); }
+    }
+
+    /* Page load fade */
+    .content {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; align-items: center;
+      gap: 0;
+      animation: fadeUp 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Gold rule ornament */
+    .ornament {
+      display: flex; align-items: center; gap: 12px;
+      margin-bottom: 18px;
+      animation: fadeUp 1.2s 0.1s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+    .ornament-line {
+      width: 60px; height: 1px;
+      background: linear-gradient(to right, transparent, var(--gold));
+    }
+    .ornament-line.right {
+      background: linear-gradient(to left, transparent, var(--gold));
+    }
+    .ornament-diamond {
+      width: 6px; height: 6px;
+      background: var(--gold);
+      transform: rotate(45deg);
+    }
+
+    h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.6em, 4vw, 2.6em);
+      font-weight: 600;
+      color: var(--cream);
+      text-align: center;
+      letter-spacing: 0.01em;
+      line-height: 1.25;
+      animation: fadeUp 1.2s 0.15s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .tagline {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-style: italic;
+      font-size: clamp(0.9em, 2vw, 1.1em);
+      color: var(--gold);
+      margin-top: 10px;
+      margin-bottom: 44px;
+      letter-spacing: 0.04em;
+      opacity: 0.9;
+      animation: fadeUp 1.2s 0.25s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* Timer */
+    .timer {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      animation: fadeUp 1.2s 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    .time-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .label {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.65em;
+      letter-spacing: 0.2em;
+      color: var(--gold);
+      text-transform: uppercase;
+    }
+
+    .digits { display: flex; gap: 4px; }
+
+    .box {
+      font-family: 'Courier New', Courier, monospace;
+      background: var(--cream);
+      color: var(--navy);
+      padding: 18px 12px;
+      border: none;
+      border-radius: 6px;
+      box-shadow:
+        0 0 0 1px rgba(201,168,76,0.4),
+        0 4px 24px rgba(0,0,0,0.45),
+        inset 0 1px 0 rgba(255,255,255,0.8);
+      font-size: clamp(1.6em, 4vw, 2.2em);
+      font-weight: 700;
+      text-align: center;
+      min-width: 1em;
+      line-height: 1;
+      position: relative;
+      perspective: 400px;
+      transition: box-shadow 0.2s;
+    }
+    .box::after {
+      content: '';
+      position: absolute;
+      left: 0; right: 0;
+      top: 50%; height: 1px;
+      background: rgba(26,39,68,0.12);
+    }
+
+    .separator {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.6em, 4vw, 2.2em);
+      color: var(--gold);
+      line-height: 1;
+      margin-top: 28px;
+      opacity: 0.7;
+      user-select: none;
+    }
+
+    /* Flip animation */
+    .flip { animation: flip 0.6s ease; }
+    @keyframes flip {
+      0%   { transform: rotateX(0deg); }
+      50%  { transform: rotateX(90deg); opacity: 0.4; }
+      100% { transform: rotateX(0deg); opacity: 1; }
+    }
+
+    /* Date display */
+    .date-label {
+      margin-top: 40px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.75em;
+      color: rgba(245,240,232,0.35);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      animation: fadeUp 1.2s 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    /* Visitor counter */
+    #visitor-counter {
+      position: fixed; bottom: 14px; left: 14px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.75em;
+      background: rgba(26,39,68,0.85);
+      color: var(--gold);
+      padding: 6px 12px;
+      border: 1px solid rgba(201,168,76,0.35);
+      border-radius: 4px;
+      z-index: 1000;
+      backdrop-filter: blur(8px);
+      letter-spacing: 0.05em;
+    }
+
+    /* Ended state */
+    .ended-msg {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.4em, 4vw, 2.2em);
+      color: var(--cream);
+      text-align: center;
+      padding: 28px 40px;
+      border: 1px solid rgba(201,168,76,0.5);
+      border-radius: 8px;
+      background: var(--gold-dim);
+      box-shadow: 0 0 40px rgba(201,168,76,0.15);
+    }
+  </style>
+</head>
+<body>
+
+  <canvas class="stars" id="stars"></canvas>
+
+  <div class="content">
+    <div class="ornament">
+      <div class="ornament-line"></div>
+      <div class="ornament-diamond"></div>
+      <div class="ornament-line right"></div>
+    </div>
+
+    <h1>Countdown to the Final Day at UCR</h1>
+    <p class="tagline">The last day of a chapter.</p>
+
+    <div class="timer" id="timer">
+      <div class="time-section">
+        <div class="label">Days</div>
+        <div class="digits" id="days-digits"></div>
+      </div>
+      <span class="separator">:</span>
+      <div class="time-section">
+        <div class="label">Hours</div>
+        <div class="digits" id="hours-digits"></div>
+      </div>
+      <span class="separator">:</span>
+      <div class="time-section">
+        <div class="label">Minutes</div>
+        <div class="digits" id="minutes-digits"></div>
+      </div>
+      <span class="separator">:</span>
+      <div class="time-section">
+        <div class="label">Seconds</div>
+        <div class="digits" id="seconds-digits"></div>
+      </div>
+    </div>
+
+    <p class="date-label">June 12, 2026 &mdash; 11:59 PM</p>
+  </div>
+
+  <div id="visitor-counter">
+    Visitors: <span id="visitor-count">—</span>
+  </div>
+
+  <script>
+    // Stars
+    (function(){
+      const canvas = document.getElementById('stars');
+      const ctx = canvas.getContext('2d');
+      let stars = [];
+      function resize(){
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+      }
+      function makeStars(){
+        stars = [];
+        for(let i = 0; i < 120; i++){
+          stars.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 1.2 + 0.2,
+            op: Math.random() * 0.5 + 0.05,
+            speed: Math.random() * 0.008 + 0.002,
+            offset: Math.random() * Math.PI * 2
+          });
+        }
+      }
+      function drawStars(t){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        for(const s of stars){
+          const alpha = s.op * (0.5 + 0.5 * Math.sin(t * s.speed + s.offset));
+          ctx.beginPath();
+          ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(201,168,76,${alpha})`;
+          ctx.fill();
+        }
+        requestAnimationFrame(drawStars);
+      }
+      resize();
+      makeStars();
+      window.addEventListener('resize', () => { resize(); makeStars(); });
+      requestAnimationFrame(drawStars);
+    })();
+
+    // Countdown
+    const targetTime = new Date(2026, 5, 12, 23, 59, 0).getTime();
+
+    function pad(n){ return String(n).padStart(2,'0'); }
+
+    function rebuildDigits(el, val){
+      el.innerHTML = '';
+      for(const ch of pad(val)){
+        const b = document.createElement('div');
+        b.className = 'box';
+        b.textContent = ch;
+        b.dataset.digit = ch;
+        el.appendChild(b);
+      }
+    }
+
+    function updateDigits(id, val){
+      const el = document.getElementById(id), s = pad(val);
+      if(el.children.length !== s.length){ rebuildDigits(el, val); return; }
+      for(let i = 0; i < s.length; i++){
+        const box = el.children[i];
+        if(box.dataset.digit !== s[i]){
+          box.classList.add('flip');
+          setTimeout(() => { box.textContent = s[i]; box.dataset.digit = s[i]; }, 300);
+          setTimeout(() => box.classList.remove('flip'), 600);
+        }
+      }
+    }
+
+    function initialize(){
+      const diff = targetTime - Date.now();
+      const d = Math.max(0, Math.floor(diff / (1000*60*60*24)));
+      const h = Math.max(0, Math.floor((diff % (1000*60*60*24)) / (1000*60*60)));
+      const m = Math.max(0, Math.floor((diff % (1000*60*60)) / (1000*60)));
+      const s = Math.max(0, Math.floor((diff % (1000*60)) / 1000));
+      rebuildDigits(document.getElementById('days-digits'), d);
+      rebuildDigits(document.getElementById('hours-digits'), h);
+      rebuildDigits(document.getElementById('minutes-digits'), m);
+      rebuildDigits(document.getElementById('seconds-digits'), s);
+      return { days:d, hours:h, minutes:m, seconds:s };
+    }
+
+    let last = initialize();
+
+    (function tick(){
+      const diff = targetTime - Date.now();
+      if(diff < 0){
+        document.getElementById('timer').innerHTML =
+          `<div class="ended-msg">That's a wrap at UCR! 🎉</div>`;
+        return;
+      }
+      const d = Math.floor(diff/(1000*60*60*24)),
+            h = Math.floor((diff%(1000*60*60*24))/(1000*60*60)),
+            m = Math.floor((diff%(1000*60*60))/(1000*60)),
+            s = Math.floor((diff%(1000*60))/1000);
+      if(d !== last.days)    updateDigits('days-digits', d);
+      if(h !== last.hours)   updateDigits('hours-digits', h);
+      if(m !== last.minutes) updateDigits('minutes-digits', m);
+      if(s !== last.seconds) updateDigits('seconds-digits', s);
+      last = { days:d, hours:h, minutes:m, seconds:s };
+      requestAnimationFrame(tick);
+    })();
+
+    // Visitor counter
+    async function updateVisitorCount(){
+      try {
+        const res = await fetch('https://noble-ox-21271.upstash.io/incr/m25_ib_exam_visitors', {
+          headers: { 'Authorization': 'Bearer AVMXAAIjcDFhNzUwNGNjMTQ2NTQ0M2RlYTViYTFiNzhhNTY2MjY3MHAxMA' }
+        });
+        const data = await res.json();
+        const count = data.result ?? data.visits ?? data.value;
+        document.getElementById('visitor-count').textContent = count;
+      } catch {
+        document.getElementById('visitor-count').textContent = '—';
+      }
+    }
+    updateVisitorCount();
+  </script>
+</body>
+</html>
