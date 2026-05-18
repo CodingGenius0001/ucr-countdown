@@ -364,12 +364,9 @@
     // Visitor counter
     async function updateVisitorCount(){
       try {
-        const res = await fetch('https://noble-ox-21271.upstash.io/incr/m25_ib_exam_visitors', {
-          headers: { 'Authorization': 'Bearer AVMXAAIjcDFhNzUwNGNjMTQ2NTQ0M2RlYTViYTFiNzhhNTY2MjY3MHAxMA' }
-        });
+        const res = await fetch('/api/visitors');
         const data = await res.json();
-        const count = data.result ?? data.visits ?? data.value;
-        document.getElementById('visitor-count').textContent = count;
+        document.getElementById('visitor-count').textContent = data.count;
       } catch {
         document.getElementById('visitor-count').textContent = '—';
       }
