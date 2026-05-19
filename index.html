@@ -365,7 +365,7 @@
     // Visitor counter
     async function updateVisitorCount(){
       try {
-        const res = await fetch('https://api.counterapi.dev/v1/ucr-countdown/visitors/up');
+        const res = await fetch('/api/visitors');
         const data = await res.json();
         document.getElementById('visitor-count').textContent = data.count;
       } catch {
