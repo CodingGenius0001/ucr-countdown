@@ -407,7 +407,7 @@
       audio.play().then(() => {
         audio.muted = false;
         // Unmute immediately on any interaction
-        ['click', 'touchstart', 'keydown', 'scroll'].forEach(e =>
+        ['click', 'touchstart', 'keydown', 'scroll', 'mousemove'].forEach(e =>
           document.addEventListener(e, fadeIn, { once: true })
         );
         // Fallback: show button if no interaction after 3s
