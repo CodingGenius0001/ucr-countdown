@@ -392,6 +392,7 @@
     function fadeIn() {
       if (unmuted) return;
       unmuted = true;
+      audio.muted = false;
       document.getElementById('play-hint').style.display = 'none';
       const start = performance.now();
       (function fade(now) {
@@ -405,12 +406,9 @@
       audio.volume = 0;
       audio.muted = true;
       audio.play().then(() => {
-        audio.muted = false;
-        // Unmute immediately on any interaction
         ['click', 'touchstart', 'keydown', 'scroll', 'mousemove'].forEach(e =>
           document.addEventListener(e, fadeIn, { once: true })
         );
-        // Fallback: show button if no interaction after 3s
         setTimeout(() => {
           if (!unmuted) document.getElementById('play-hint').style.display = 'block';
         }, 3000);
