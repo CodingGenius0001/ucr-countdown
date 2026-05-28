@@ -202,69 +202,6 @@
       letter-spacing: 0.05em;
     }
 
-    /* Intro overlay */
-    #intro {
-      position: fixed; inset: 0; z-index: 9999;
-      background: var(--navy);
-      background-image:
-        radial-gradient(ellipse at 30% 30%, rgba(201,168,76,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse at 70% 70%, rgba(201,168,76,0.04) 0%, transparent 50%);
-      display: flex; flex-direction: column;
-      justify-content: center; align-items: center; gap: 32px;
-      cursor: pointer;
-      transition: opacity 1s ease;
-    }
-    #intro.fade-out { opacity: 0; pointer-events: none; }
-    #intro .intro-ornament {
-      display: flex; align-items: center; gap: 12px;
-      opacity: 0; animation: fadeUp 1s 0.2s ease both;
-    }
-    #intro .intro-line {
-      width: 50px; height: 1px;
-      background: linear-gradient(to right, transparent, var(--gold));
-    }
-    #intro .intro-line.r {
-      background: linear-gradient(to left, transparent, var(--gold));
-    }
-    #intro .intro-diamond {
-      width: 5px; height: 5px;
-      background: var(--gold); transform: rotate(45deg);
-    }
-    #intro h2 {
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: clamp(1.5em, 4.5vw, 2.6em);
-      font-weight: 600;
-      color: var(--cream);
-      text-align: center;
-      padding: 0 24px;
-      line-height: 1.3;
-      opacity: 0; animation: fadeUp 1s 0.35s ease both;
-    }
-    #intro .intro-sub {
-      font-family: 'Playfair Display', Georgia, serif;
-      font-style: italic;
-      font-size: clamp(0.85em, 2vw, 1em);
-      color: var(--gold);
-      opacity: 0; animation: fadeUp 1s 0.5s ease both;
-    }
-    #intro .enter-btn {
-      margin-top: 8px;
-      font-family: 'Playfair Display', Georgia, serif;
-      font-style: italic;
-      font-size: clamp(1em, 2.5vw, 1.25em);
-      color: var(--navy);
-      background: linear-gradient(135deg, var(--gold-light), var(--gold));
-      padding: 14px 44px;
-      border-radius: 2px;
-      letter-spacing: 0.06em;
-      box-shadow: 0 4px 32px rgba(201,168,76,0.35), 0 1px 0 rgba(255,255,255,0.15) inset;
-      opacity: 0; animation: fadeUp 1s 0.65s ease both;
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-    #intro .enter-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 40px rgba(201,168,76,0.5), 0 1px 0 rgba(255,255,255,0.2) inset;
-    }
 
     /* Ended state */
     .ended-msg {
@@ -283,17 +220,6 @@
 <body>
 
   <audio id="bg-music" src="music.mp3" preload="auto" loop></audio>
-
-  <div id="intro" onclick="enterSite()">
-    <div class="intro-ornament">
-      <div class="intro-line"></div>
-      <div class="intro-diamond"></div>
-      <div class="intro-line r"></div>
-    </div>
-    <h2>Countdown to the Final Day at UCR</h2>
-    <p class="intro-sub">The last day of a chapter.</p>
-    <div class="enter-btn">Enter</div>
-  </div>
 
   <canvas class="stars" id="stars"></canvas>
 
@@ -439,22 +365,13 @@
       requestAnimationFrame(tick);
     })();
 
-    // Music — starts on click of intro overlay (guaranteed user gesture)
-    function enterSite() {
-      const intro = document.getElementById('intro');
+    // Music — attempt unmuted autoplay on load
+    window.addEventListener('load', () => {
       const audio = document.getElementById('bg-music');
-      intro.classList.add('fade-out');
-      setTimeout(() => intro.remove(), 800);
       audio.currentTime = 90;
-      audio.volume = 0;
-      audio.play().then(() => {
-        const start = performance.now();
-        (function fade(now) {
-          audio.volume = Math.min((now - start) / 1000, 1);
-          if (audio.volume < 1) requestAnimationFrame(fade);
-        })(performance.now());
-      }).catch(() => {});
-    }
+      audio.volume = 1;
+      audio.play().catch(() => {});
+    });
 
     // Visitor counter — only increments once per browser via localStorage
     async function updateVisitorCount(){
