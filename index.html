@@ -202,24 +202,38 @@
       letter-spacing: 0.05em;
     }
 
-    /* Music play hint (shown if autoplay is blocked) */
-    #play-hint {
-      display: none;
-      position: fixed; bottom: 14px; right: 14px;
-      font-family: 'Courier New', Courier, monospace;
-      font-size: 0.75em;
-      background: rgba(26,39,68,0.85);
-      color: var(--gold);
-      padding: 6px 12px;
-      border: 1px solid rgba(201,168,76,0.35);
-      border-radius: 4px;
-      z-index: 1000;
-      backdrop-filter: blur(8px);
-      letter-spacing: 0.05em;
+    /* Intro overlay */
+    #intro {
+      position: fixed; inset: 0; z-index: 9999;
+      background: var(--navy);
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center; gap: 20px;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: opacity 0.8s ease;
     }
-    #play-hint:hover { background: rgba(36,50,96,0.95); }
+    #intro.fade-out { opacity: 0; pointer-events: none; }
+    #intro h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(1.4em, 4vw, 2.2em);
+      color: var(--cream);
+      text-align: center;
+      padding: 0 20px;
+    }
+    #intro .enter-btn {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.85em;
+      color: var(--gold);
+      border: 1px solid rgba(201,168,76,0.5);
+      padding: 10px 28px;
+      border-radius: 4px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; }
+      50%       { opacity: 1; }
+    }
 
     /* Ended state */
     .ended-msg {
@@ -238,7 +252,11 @@
 <body>
 
   <audio id="bg-music" src="music.mp3" preload="auto" loop></audio>
-  <button id="play-hint" onclick="fadeIn()">♪ Play music</button>
+
+  <div id="intro" onclick="enterSite()">
+    <h2>Countdown to the Final Day at UCR</h2>
+    <div class="enter-btn">Click to enter</div>
+  </div>
 
   <canvas class="stars" id="stars"></canvas>
 
@@ -384,38 +402,22 @@
       requestAnimationFrame(tick);
     })();
 
-    // Music — starts muted at 1:30 (browsers allow muted autoplay),
-    // then fades in on first user interaction
-    const audio = document.getElementById('bg-music');
-    let unmuted = false;
-
-    function fadeIn() {
-      if (unmuted) return;
-      unmuted = true;
-      audio.muted = false;
-      document.getElementById('play-hint').style.display = 'none';
-      const start = performance.now();
-      (function fade(now) {
-        audio.volume = Math.min((now - start) / 1000, 1);
-        if (audio.volume < 1) requestAnimationFrame(fade);
-      })(performance.now());
-    }
-
-    window.addEventListener('load', () => {
+    // Music — starts on click of intro overlay (guaranteed user gesture)
+    function enterSite() {
+      const intro = document.getElementById('intro');
+      const audio = document.getElementById('bg-music');
+      intro.classList.add('fade-out');
+      setTimeout(() => intro.remove(), 800);
       audio.currentTime = 90;
       audio.volume = 0;
-      audio.muted = true;
       audio.play().then(() => {
-        ['click', 'touchstart', 'keydown', 'scroll', 'mousemove'].forEach(e =>
-          document.addEventListener(e, fadeIn, { once: true })
-        );
-        setTimeout(() => {
-          if (!unmuted) document.getElementById('play-hint').style.display = 'block';
-        }, 3000);
-      }).catch(() => {
-        document.getElementById('play-hint').style.display = 'block';
-      });
-    });
+        const start = performance.now();
+        (function fade(now) {
+          audio.volume = Math.min((now - start) / 1000, 1);
+          if (audio.volume < 1) requestAnimationFrame(fade);
+        })(performance.now());
+      }).catch(() => {});
+    }
 
     // Visitor counter — only increments once per browser via localStorage
     async function updateVisitorCount(){
