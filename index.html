@@ -202,6 +202,25 @@
       letter-spacing: 0.05em;
     }
 
+    /* Music play hint (shown if autoplay is blocked) */
+    #play-hint {
+      display: none;
+      position: fixed; bottom: 14px; right: 14px;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.75em;
+      background: rgba(26,39,68,0.85);
+      color: var(--gold);
+      padding: 6px 12px;
+      border: 1px solid rgba(201,168,76,0.35);
+      border-radius: 4px;
+      z-index: 1000;
+      backdrop-filter: blur(8px);
+      letter-spacing: 0.05em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #play-hint:hover { background: rgba(36,50,96,0.95); }
+
     /* Ended state */
     .ended-msg {
       font-family: 'Playfair Display', Georgia, serif;
@@ -217,6 +236,9 @@
   </style>
 </head>
 <body>
+
+  <audio id="bg-music" src="music.mp3" preload="auto" loop></audio>
+  <button id="play-hint" onclick="startMusic(true)">♪ Play music</button>
 
   <canvas class="stars" id="stars"></canvas>
 
@@ -361,6 +383,30 @@
       last = { days:d, hours:h, minutes:m, seconds:s };
       requestAnimationFrame(tick);
     })();
+
+    // Music — starts at 1:30, fades in over 1 second
+    function startMusic(fromClick) {
+      const audio = document.getElementById('bg-music');
+      audio.currentTime = 90;
+      audio.volume = 0;
+      audio.play().then(() => {
+        if (fromClick) document.getElementById('play-hint').style.display = 'none';
+        const start = performance.now();
+        (function fade(now) {
+          audio.volume = Math.min((now - start) / 1000, 1);
+          if (audio.volume < 1) requestAnimationFrame(fade);
+        })(performance.now());
+      }).catch(() => {});
+    }
+
+    window.addEventListener('load', () => {
+      startMusic(false);
+      // If autoplay was blocked, the play hint stays hidden until we know — reveal after short delay
+      setTimeout(() => {
+        const audio = document.getElementById('bg-music');
+        if (audio.paused) document.getElementById('play-hint').style.display = 'block';
+      }, 500);
+    });
 
     // Visitor counter — only increments once per browser via localStorage
     async function updateVisitorCount(){
