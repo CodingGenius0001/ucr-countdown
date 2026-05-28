@@ -238,7 +238,7 @@
 <body>
 
   <audio id="bg-music" src="music.mp3" preload="auto" loop></audio>
-  <button id="play-hint" onclick="startMusic(true)">♪ Play music</button>
+  <button id="play-hint" onclick="fadeIn()">♪ Play music</button>
 
   <canvas class="stars" id="stars"></canvas>
 
@@ -384,28 +384,39 @@
       requestAnimationFrame(tick);
     })();
 
-    // Music — starts at 1:30, fades in over 1 second
-    function startMusic(fromClick) {
-      const audio = document.getElementById('bg-music');
-      audio.currentTime = 90;
-      audio.volume = 0;
-      audio.play().then(() => {
-        if (fromClick) document.getElementById('play-hint').style.display = 'none';
-        const start = performance.now();
-        (function fade(now) {
-          audio.volume = Math.min((now - start) / 1000, 1);
-          if (audio.volume < 1) requestAnimationFrame(fade);
-        })(performance.now());
-      }).catch(() => {});
+    // Music — starts muted at 1:30 (browsers allow muted autoplay),
+    // then fades in on first user interaction
+    const audio = document.getElementById('bg-music');
+    let unmuted = false;
+
+    function fadeIn() {
+      if (unmuted) return;
+      unmuted = true;
+      document.getElementById('play-hint').style.display = 'none';
+      const start = performance.now();
+      (function fade(now) {
+        audio.volume = Math.min((now - start) / 1000, 1);
+        if (audio.volume < 1) requestAnimationFrame(fade);
+      })(performance.now());
     }
 
     window.addEventListener('load', () => {
-      startMusic(false);
-      // If autoplay was blocked, the play hint stays hidden until we know — reveal after short delay
-      setTimeout(() => {
-        const audio = document.getElementById('bg-music');
-        if (audio.paused) document.getElementById('play-hint').style.display = 'block';
-      }, 500);
+      audio.currentTime = 90;
+      audio.volume = 0;
+      audio.muted = true;
+      audio.play().then(() => {
+        audio.muted = false;
+        // Unmute immediately on any interaction
+        ['click', 'touchstart', 'keydown', 'scroll'].forEach(e =>
+          document.addEventListener(e, fadeIn, { once: true })
+        );
+        // Fallback: show button if no interaction after 3s
+        setTimeout(() => {
+          if (!unmuted) document.getElementById('play-hint').style.display = 'block';
+        }, 3000);
+      }).catch(() => {
+        document.getElementById('play-hint').style.display = 'block';
+      });
     });
 
     // Visitor counter — only increments once per browser via localStorage
